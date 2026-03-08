@@ -9,20 +9,14 @@ import {
   Stethoscope, ClipboardList, Sun, Apple, Flame, Brain, HeartPulse,
 } from 'lucide-react';
 
-const iconMap: Record<string, React.ElementType> = {
-  Stethoscope, ClipboardList, Sun, Apple, Flame, Brain, HeartPulse,
-  Shield, Activity,
-};
-
-const sectionDisplayNames: Record<string, string> = {
-  digestive_symptoms: 'Digestive',
-  stool_health: 'Stool Health',
-  lifestyle: 'Lifestyle',
-  diet_patterns: 'Diet',
-  inflammation: 'Inflammation',
-  gut_brain: 'Gut-Brain',
-  hormonal: 'Hormonal',
-};
+const compositeScoresMeta: { key: string; label: string; icon: React.ElementType }[] = [
+  { key: 'gut_integrity', label: 'Gut Integrity', icon: Shield },
+  { key: 'microbiome_diversity', label: 'Microbiome Diversity', icon: Activity },
+  { key: 'digestive_efficiency', label: 'Digestive Efficiency', icon: Stethoscope },
+  { key: 'inflammation_load', label: 'Inflammation Load', icon: Flame },
+  { key: 'food_sensitivity_risk', label: 'Food Sensitivity', icon: Apple },
+  { key: 'gut_brain_balance', label: 'Gut-Brain Balance', icon: Brain },
+];
 
 const ScoreRing = ({ score, label, icon: Icon }: { score: number; label: string; icon: React.ElementType }) => {
   const circumference = 2 * Math.PI * 40;
@@ -128,17 +122,16 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* Category Scores */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-10">
-              {sections.map((s) => {
-                const Icon = iconMap[s.icon] || Activity;
-                const sectionScore = (scores as any)[s.id] as number;
+            {/* Composite Health Scores */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-10">
+              {compositeScoresMeta.map((cs) => {
+                const compositeScore = (scores as any)[cs.key] as number;
                 return (
                   <ScoreRing
-                    key={s.id}
-                    score={sectionScore ?? 0}
-                    label={sectionDisplayNames[s.id] || s.title}
-                    icon={Icon}
+                    key={cs.key}
+                    score={compositeScore ?? 0}
+                    label={cs.label}
+                    icon={cs.icon}
                   />
                 );
               })}
