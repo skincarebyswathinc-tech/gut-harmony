@@ -568,7 +568,153 @@ export interface ScoreResult {
   inflammation: number;
   gut_brain: number;
   hormonal: number;
+  gut_integrity: number;
+  microbiome_diversity: number;
+  digestive_efficiency: number;
+  inflammation_load: number;
+  food_sensitivity_risk: number;
+  gut_brain_balance: number;
   overall: number;
+}
+
+interface WeightedQuestion {
+  id: string;
+  weight: number;
+}
+
+const compositeScoreMap: Record<string, WeightedQuestion[]> = {
+  gut_integrity: [
+    { id: 'ds_bloating', weight: 1.2 }, { id: 'ds_bloating_severity', weight: 1.0 },
+    { id: 'ds_abdominal_pain', weight: 1.3 }, { id: 'ds_acid_reflux', weight: 1.0 },
+    { id: 'sh_mucus', weight: 1.5 }, { id: 'sh_color', weight: 1.2 },
+    { id: 'inf_skin', weight: 0.8 }, { id: 'inf_autoimmune', weight: 1.0 },
+    { id: 'lf_antibiotics_recent', weight: 0.9 }, { id: 'lf_antibiotics_frequency', weight: 0.9 },
+    { id: 'lf_alcohol', weight: 0.7 },
+  ],
+  microbiome_diversity: [
+    { id: 'dp_fiber', weight: 1.5 }, { id: 'dp_plant_diversity', weight: 1.8 },
+    { id: 'dp_fermented', weight: 1.5 }, { id: 'dp_processed_food', weight: 1.2 },
+    { id: 'lf_antibiotics_recent', weight: 1.3 }, { id: 'lf_antibiotics_frequency', weight: 1.3 },
+    { id: 'sh_type', weight: 0.8 }, { id: 'sh_frequency', weight: 0.8 },
+    { id: 'lf_exercise', weight: 0.7 },
+  ],
+  digestive_efficiency: [
+    { id: 'ds_bloating', weight: 1.5 }, { id: 'ds_gas', weight: 1.3 },
+    { id: 'ds_constipation', weight: 1.2 }, { id: 'ds_diarrhea', weight: 1.2 },
+    { id: 'ds_nausea', weight: 1.0 }, { id: 'sh_type', weight: 1.3 },
+    { id: 'sh_frequency', weight: 1.0 }, { id: 'sh_undigested', weight: 1.5 },
+    { id: 'sh_incomplete', weight: 1.0 }, { id: 'dp_meal_regularity', weight: 0.8 },
+    { id: 'hm_energy_crashes', weight: 0.9 },
+  ],
+  inflammation_load: [
+    { id: 'inf_fatigue', weight: 1.3 }, { id: 'inf_brain_fog', weight: 1.2 },
+    { id: 'inf_joint_pain', weight: 1.5 }, { id: 'inf_skin', weight: 1.3 },
+    { id: 'inf_headaches', weight: 1.0 }, { id: 'inf_sinus', weight: 0.8 },
+    { id: 'inf_autoimmune', weight: 1.5 }, { id: 'dp_sugar', weight: 1.3 },
+    { id: 'dp_processed_food', weight: 1.0 }, { id: 'lf_alcohol', weight: 0.8 },
+    { id: 'lf_stress', weight: 0.7 },
+  ],
+  food_sensitivity_risk: [
+    { id: 'dp_dairy', weight: 1.8 }, { id: 'dp_gluten', weight: 1.8 },
+    { id: 'ds_bloating', weight: 1.2 }, { id: 'ds_gas', weight: 1.0 },
+    { id: 'ds_diarrhea', weight: 1.0 }, { id: 'ds_abdominal_pain', weight: 1.0 },
+    { id: 'inf_skin', weight: 1.2 }, { id: 'inf_headaches', weight: 0.8 },
+    { id: 'inf_sinus', weight: 0.8 }, { id: 'sh_mucus', weight: 1.0 },
+  ],
+  gut_brain_balance: [
+    { id: 'gb_anxiety', weight: 1.5 }, { id: 'gb_mood_swings', weight: 1.3 },
+    { id: 'gb_sleep_disturbance', weight: 1.3 }, { id: 'gb_irritability', weight: 1.0 },
+    { id: 'gb_depression', weight: 1.2 }, { id: 'gb_focus', weight: 1.0 },
+    { id: 'lf_sleep_quality', weight: 1.2 }, { id: 'lf_sleep_hours', weight: 1.0 },
+    { id: 'lf_stress', weight: 1.5 }, { id: 'inf_brain_fog', weight: 0.8 },
+  ],
+};
+
+function calcComposite(questions: WeightedQuestion[], answers: Record<string, number>): number {
+  const answered = questions.filter(q => answers[q.id] !== undefined);
+  if (answered.length === 0) return 0;
+  const weightedSum = answered.reduce((sum, q) => sum + (answers[q.id] || 0) * q.weight, 0);
+  const weightedMax = answered.reduce((sum, q) => sum + 5 * q.weight, 0);
+  return Math.round((weightedSum / weightedMax) * 100);
+}
+
+export function calculateScores(answers: Record<string, number>): ScoreResult {
+  const sectionIds: SectionId[] = [
+    'digestive_symptoms', 'stool_health', 'lifestyle', 'diet_patterns',
+    'inflammation', 'gut_brain', 'hormonal',
+  ];
+
+  const scores: Record<string, number> = {};
+
+  for (const sId of sectionIds) {
+    const qs = assessmentQuestions.filter(q => q.section === sId);
+    const answeredQs = qs.filter(q => answers[q.id] !== undefined);
+    if (answeredQs.length === 0) { scores[sId] = 0; continue; }
+    const total = answeredQs.reduce((sum, q) => sum + (answers[q.id] || 0), 0);
+    scores[sId] = Math.round((total / (answeredQs.length * 5)) * 100);
+  }
+
+  // Composite scores
+  const compositeKeys = ['gut_integrity', 'microbiome_diversity', 'digestive_efficiency', 'inflammation_load', 'food_sensitivity_risk', 'gut_brain_balance'];
+  for (const key of compositeKeys) {
+    scores[key] = calcComposite(compositeScoreMap[key], answers);
+  }
+
+  scores.overall = Math.round(compositeKeys.reduce((a, k) => a + scores[k], 0) / compositeKeys.length);
+
+  return scores as unknown as ScoreResult;
+}
+
+export function getScoreLabel(score: number): string {
+  if (score >= 80) return 'Excellent';
+  if (score >= 60) return 'Moderate';
+  if (score >= 40) return 'Poor';
+  return 'Critical';
+}
+
+export function getScoreColor(score: number): string {
+  if (score >= 80) return 'text-score-excellent';
+  if (score >= 60) return 'text-score-good';
+  if (score >= 40) return 'text-score-fair';
+  return 'text-score-poor';
+}
+
+export function getRecommendations(scores: ScoreResult): string[] {
+  const recs: string[] = [];
+
+  if (scores.gut_integrity < 60) {
+    recs.push('Your gut lining may be compromised. Consider L-glutamine, bone broth, and removing irritants like alcohol and NSAIDs.');
+    recs.push('Zinc carnosine and collagen peptides may support gut barrier repair (consult your doctor).');
+  }
+  if (scores.microbiome_diversity < 60) {
+    recs.push('Aim for 30+ different plant foods per week to boost microbiome diversity.');
+    recs.push('Incorporate daily fermented foods like yogurt, kefir, kimchi, or sauerkraut.');
+  }
+  if (scores.digestive_efficiency < 60) {
+    recs.push('Eat smaller, more frequent meals and chew thoroughly to improve digestion.');
+    recs.push('Consider digestive enzymes or apple cider vinegar before meals (consult your doctor).');
+  }
+  if (scores.inflammation_load < 60) {
+    recs.push('Include anti-inflammatory foods daily: fatty fish, turmeric, ginger, leafy greens, and berries.');
+    recs.push('Reduce sugar and processed food intake — major inflammation drivers.');
+  }
+  if (scores.food_sensitivity_risk < 60) {
+    recs.push('Try a 3-week elimination diet removing dairy and gluten, then reintroduce one at a time.');
+    recs.push('Track symptoms after meals to identify patterns with specific foods.');
+  }
+  if (scores.gut_brain_balance < 60) {
+    recs.push('Prioritize 7-9 hours of quality sleep — your gut repairs itself during rest.');
+    recs.push('Practice daily stress-reduction: deep breathing, meditation, or gentle yoga.');
+  }
+  if (scores.overall >= 80) {
+    recs.push('Excellent gut health! Maintain your habits and reassess periodically.');
+  } else if (scores.overall >= 60) {
+    recs.push('Your gut health is moderate. Focus on your lowest-scoring areas for the biggest improvements.');
+  } else if (scores.overall < 40) {
+    recs.push('Your gut health needs attention. Consider consulting a functional medicine practitioner.');
+  }
+
+  return recs;
 }
 
 export function calculateScores(answers: Record<string, number>): ScoreResult {
