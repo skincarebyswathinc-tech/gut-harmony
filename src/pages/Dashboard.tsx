@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Leaf, User, LogOut, ArrowRight, Shield, Activity,
   Stethoscope, Flame, Apple, Brain, RefreshCw, TrendingDown, Zap,
+  ClipboardList,
 } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -166,6 +167,9 @@ const Dashboard = () => {
           <span className="text-lg font-display font-semibold text-foreground">My Gut Health</span>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate('/daily-log')}>
+            <ClipboardList className="h-4 w-4 mr-1" /> Daily Log
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
             <User className="h-4 w-4 mr-1" /> Profile
           </Button>
