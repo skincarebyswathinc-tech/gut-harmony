@@ -16,6 +16,7 @@ import SkinAssessment from "./pages/SkinAssessment";
 import Profile from "./pages/Profile";
 import DailyGutLog from "./pages/DailyGutLog";
 import FoodTracker from "./pages/FoodTracker";
+import GutProgress from "./pages/GutProgress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/daily-log" element={<ProtectedRoute><DailyGutLog /></ProtectedRoute>} />
             <Route path="/food-tracker" element={<ProtectedRoute><FoodTracker /></ProtectedRoute>} />
+            <Route path="/gut-progress" element={<ProtectedRoute><GutProgress /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
