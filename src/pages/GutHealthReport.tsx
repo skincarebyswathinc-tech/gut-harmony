@@ -6,6 +6,7 @@ import { getScoreLabel, getScoreColor } from '@/lib/assessment';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import ShareReportDialog from '@/components/ShareReportDialog';
 import {
   Leaf, ArrowLeft, Download, Shield, Activity, Stethoscope,
   Flame, Apple, Brain, AlertTriangle, FileText, Loader2,
@@ -65,6 +66,7 @@ const GutHealthReport = () => {
   const navigate = useNavigate();
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,6 +77,15 @@ const GutHealthReport = () => {
   const generateReport = async () => {
     setLoading(true);
     try {
+      // Get latest assessment ID for sharing
+      const { data: assessments } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('user_id', user!.id)
+        .order('completed_at', { ascending: false })
+        .limit(1);
+      if (assessments?.[0]) setAssessmentId(assessments[0].id);
+
       const { data, error } = await supabase.functions.invoke('generate-gut-report');
       if (error) throw error;
       setReport(data);
@@ -134,9 +145,12 @@ const GutHealthReport = () => {
           <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="h-4 w-4 mr-1" /> Dashboard
           </Button>
-          <Button size="sm" onClick={handleDownloadPDF}>
-            <Download className="h-4 w-4 mr-1" /> Download PDF
-          </Button>
+          <div className="flex items-center gap-2">
+            {assessmentId && <ShareReportDialog assessmentId={assessmentId} />}
+            <Button size="sm" onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-1" /> Download PDF
+            </Button>
+          </div>
         </nav>
 
         <div ref={reportRef} className="max-w-5xl mx-auto px-6 pb-16 space-y-8">

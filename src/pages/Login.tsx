@@ -55,6 +55,9 @@ const Login = () => {
             <Link to="/forgot-password" className="text-primary hover:underline">Forgot password?</Link>
             <Link to="/signup" className="text-primary hover:underline">Create account</Link>
           </div>
+          <p className="text-center text-xs text-muted-foreground">
+            Health professional? <Link to="/practitioner-signup" className="text-primary hover:underline">Register as a practitioner</Link>
+          </p>
 
           <div className="relative my-2">
             <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>

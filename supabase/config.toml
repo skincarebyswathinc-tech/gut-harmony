@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.generate-gut-report]
 verify_jwt = false
+
+[functions.share-report]
+verify_jwt = false
+
+[functions.practitioner-api]
+verify_jwt = false
+
+[functions.register-practitioner]
+verify_jwt = false
