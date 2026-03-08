@@ -36,20 +36,15 @@ const PractitionerSignup = () => {
 
     setLoading(true);
     try {
-      const { error, data } = await signUp(email, password);
+      const { error } = await signUp(email, password);
       if (error) throw error;
 
-      // After signup, the user needs to verify email first
-      // We'll store practitioner details to be saved after verification
-      // For now, store in localStorage temporarily
-      if (data?.user) {
-        localStorage.setItem('pending_practitioner', JSON.stringify({
-          userId: data.user.id,
-          practiceName,
-          specialization,
-          licenseNumber,
-        }));
-      }
+      // Store practitioner details to be completed after email verification
+      localStorage.setItem('pending_practitioner', JSON.stringify({
+        practiceName,
+        specialization,
+        licenseNumber,
+      }));
 
       toast.success('Check your email to confirm your account. Once verified, log in to access your practitioner dashboard.');
     } catch (err: any) {

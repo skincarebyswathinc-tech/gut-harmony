@@ -21,6 +21,8 @@ import FoodTracker from "./pages/FoodTracker";
 import GutProgress from "./pages/GutProgress";
 import GutHealthReport from "./pages/GutHealthReport";
 import Pricing from "./pages/Pricing";
+import PractitionerSignup from "./pages/PractitionerSignup";
+import PractitionerDashboard from "./pages/PractitionerDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/practitioner-signup" element={<PractitionerSignup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
@@ -44,6 +47,7 @@ const App = () => (
               <Route path="/assessment" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
               <Route path="/skin-assessment" element={<ProtectedRoute><SkinAssessment /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/practitioner-dashboard" element={<ProtectedRoute><PractitionerDashboard /></ProtectedRoute>} />
               <Route path="/daily-log" element={
                 <ProtectedRoute>
                   <FeatureGate feature="daily_tracking">
