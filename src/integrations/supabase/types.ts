@@ -77,6 +77,33 @@ export type Database = {
         }
         Relationships: []
       }
+      skin_assessments: {
+        Row: {
+          answers: Json
+          completed_at: string
+          id: string
+          overall_score: number | null
+          scores: Json
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string
+          id?: string
+          overall_score?: number | null
+          scores?: Json
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          id?: string
+          overall_score?: number | null
+          scores?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
