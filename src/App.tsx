@@ -12,6 +12,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Assessment from "./pages/Assessment";
+import SkinAssessment from "./pages/SkinAssessment";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
