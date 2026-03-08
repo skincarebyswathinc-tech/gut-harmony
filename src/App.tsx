@@ -17,6 +17,7 @@ import Profile from "./pages/Profile";
 import DailyGutLog from "./pages/DailyGutLog";
 import FoodTracker from "./pages/FoodTracker";
 import GutProgress from "./pages/GutProgress";
+import GutHealthReport from "./pages/GutHealthReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
