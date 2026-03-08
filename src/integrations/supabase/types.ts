@@ -41,6 +41,69 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_gut_logs: {
+        Row: {
+          abdominal_discomfort: number
+          acid_reflux: number
+          bloating: number
+          created_at: string
+          energy_level: number
+          exercise_minutes: number | null
+          gas: number
+          id: string
+          incomplete_evacuation: boolean | null
+          log_date: string
+          mood: number
+          mucus_present: boolean | null
+          sleep_hours: number | null
+          stool_frequency: number | null
+          stool_type: number | null
+          stress_level: number
+          user_id: string
+          water_intake: number | null
+        }
+        Insert: {
+          abdominal_discomfort?: number
+          acid_reflux?: number
+          bloating?: number
+          created_at?: string
+          energy_level?: number
+          exercise_minutes?: number | null
+          gas?: number
+          id?: string
+          incomplete_evacuation?: boolean | null
+          log_date?: string
+          mood?: number
+          mucus_present?: boolean | null
+          sleep_hours?: number | null
+          stool_frequency?: number | null
+          stool_type?: number | null
+          stress_level?: number
+          user_id: string
+          water_intake?: number | null
+        }
+        Update: {
+          abdominal_discomfort?: number
+          acid_reflux?: number
+          bloating?: number
+          created_at?: string
+          energy_level?: number
+          exercise_minutes?: number | null
+          gas?: number
+          id?: string
+          incomplete_evacuation?: boolean | null
+          log_date?: string
+          mood?: number
+          mucus_present?: boolean | null
+          sleep_hours?: number | null
+          stool_frequency?: number | null
+          stool_type?: number | null
+          stress_level?: number
+          user_id?: string
+          water_intake?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activity_level: string | null
