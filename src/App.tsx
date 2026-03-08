@@ -40,6 +40,7 @@ const App = () => (
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/daily-log" element={<ProtectedRoute><DailyGutLog /></ProtectedRoute>} />
             <Route path="/food-tracker" element={<ProtectedRoute><FoodTracker /></ProtectedRoute>} />
+            <Route path="/gut-progress" element={<ProtectedRoute><GutProgress /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
