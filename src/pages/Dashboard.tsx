@@ -6,6 +6,7 @@ import {
   sections, ScoreResult, getScoreLabel, getScoreColor, getRecommendations,
   assessmentQuestions,
 } from '@/lib/assessment';
+import { computeCorrelations, formatInsight, type FoodLog, type Correlation } from '@/lib/food-correlations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
