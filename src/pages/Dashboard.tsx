@@ -130,6 +130,17 @@ const Dashboard = () => {
         }
         setLoading(false);
       });
+
+    // food correlations
+    supabase
+      .from('food_logs')
+      .select('food_category, bloating, gas, reflux, fatigue')
+      .eq('user_id', user.id)
+      .then(({ data: foodData }) => {
+        if (foodData && foodData.length > 0) {
+          setFoodCorrelations(computeCorrelations(foodData as unknown as FoodLog[]));
+        }
+      });
   }, [user]);
 
   const recommendations = scores ? getRecommendations(scores).slice(0, 5) : [];
