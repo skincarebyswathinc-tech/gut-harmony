@@ -369,6 +369,38 @@ const Dashboard = () => {
               </Card>
             </section>
 
+            {/* ─── Gut Intelligence Insights ─── */}
+            {gutInsights.length > 0 && (
+              <section>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg font-display flex items-center gap-2">
+                      <Lightbulb className="h-5 w-5 text-primary" /> Gut Intelligence Insights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {gutInsights.map((insight, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-start gap-2 p-3 rounded-lg border ${
+                          insight.type === 'warning'
+                            ? 'bg-destructive/5 border-destructive/20'
+                            : 'bg-primary/5 border-primary/20'
+                        }`}
+                      >
+                        {insight.type === 'warning' ? (
+                          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                        ) : (
+                          <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        )}
+                        <p className="text-sm text-foreground">{insight.message}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
             {/* ─── Food Trigger Insights ─── */}
             {foodCorrelations.length > 0 && (
               <section>
