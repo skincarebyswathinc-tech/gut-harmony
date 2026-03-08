@@ -149,6 +149,41 @@ export type Database = {
         }
         Relationships: []
       }
+      practitioner_notes: {
+        Row: {
+          created_at: string
+          id: string
+          note: string
+          practitioner_user_id: string
+          shared_report_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note: string
+          practitioner_user_id: string
+          shared_report_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string
+          practitioner_user_id?: string
+          shared_report_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practitioner_notes_shared_report_id_fkey"
+            columns: ["shared_report_id"]
+            isOneToOne: false
+            referencedRelation: "shared_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activity_level: string | null
@@ -157,6 +192,9 @@ export type Database = {
           gender: string | null
           height_cm: number | null
           id: string
+          license_number: string | null
+          practice_name: string | null
+          specialization: string | null
           updated_at: string
           user_id: string
           weight_kg: number | null
@@ -168,6 +206,9 @@ export type Database = {
           gender?: string | null
           height_cm?: number | null
           id?: string
+          license_number?: string | null
+          practice_name?: string | null
+          specialization?: string | null
           updated_at?: string
           user_id: string
           weight_kg?: number | null
@@ -179,11 +220,58 @@ export type Database = {
           gender?: string | null
           height_cm?: number | null
           id?: string
+          license_number?: string | null
+          practice_name?: string | null
+          specialization?: string | null
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
         }
         Relationships: []
+      }
+      shared_reports: {
+        Row: {
+          assessment_id: string
+          id: string
+          patient_user_id: string
+          practitioner_email: string
+          practitioner_user_id: string | null
+          share_token: string
+          shared_at: string
+          status: string
+          viewed_at: string | null
+        }
+        Insert: {
+          assessment_id: string
+          id?: string
+          patient_user_id: string
+          practitioner_email: string
+          practitioner_user_id?: string | null
+          share_token?: string
+          shared_at?: string
+          status?: string
+          viewed_at?: string | null
+        }
+        Update: {
+          assessment_id?: string
+          id?: string
+          patient_user_id?: string
+          practitioner_email?: string
+          practitioner_user_id?: string | null
+          share_token?: string
+          shared_at?: string
+          status?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_reports_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skin_assessments: {
         Row: {
@@ -245,6 +333,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       weekly_reports: {
         Row: {
           ai_summary: string | null
@@ -280,10 +386,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "practitioner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -410,6 +522,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "practitioner"],
+    },
   },
 } as const
