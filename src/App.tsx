@@ -16,6 +16,7 @@ import SkinAssessment from "./pages/SkinAssessment";
 import Profile from "./pages/Profile";
 import DailyGutLog from "./pages/DailyGutLog";
 import FoodTracker from "./pages/FoodTracker";
+import GutProgress from "./pages/GutProgress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
