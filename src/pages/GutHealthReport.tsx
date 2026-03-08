@@ -77,6 +77,15 @@ const GutHealthReport = () => {
   const generateReport = async () => {
     setLoading(true);
     try {
+      // Get latest assessment ID for sharing
+      const { data: assessments } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('user_id', user!.id)
+        .order('completed_at', { ascending: false })
+        .limit(1);
+      if (assessments?.[0]) setAssessmentId(assessments[0].id);
+
       const { data, error } = await supabase.functions.invoke('generate-gut-report');
       if (error) throw error;
       setReport(data);
