@@ -108,7 +108,10 @@ const ScoreRing = ({ score, label, icon: Icon }: { score: number; label: string;
 
 /* ── Dashboard ─────────────────────────────────────── */
 
+import usePractitionerSetup from '@/hooks/usePractitionerSetup';
+
 const Dashboard = () => {
+  usePractitionerSetup();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [scores, setScores] = useState<ScoreResult | null>(null);
