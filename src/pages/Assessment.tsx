@@ -124,7 +124,7 @@ const Assessment = () => {
     } else {
       localStorage.removeItem(AUTO_SAVE_KEY);
       toast.success('Assessment complete!');
-      navigate('/dashboard');
+      navigate('/upgrade?from=assessment');
     }
   };
 
