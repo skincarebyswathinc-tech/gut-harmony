@@ -8,6 +8,7 @@ import {
 } from '@/lib/assessment';
 import { computeCorrelations, formatInsight, type FoodLog, type Correlation } from '@/lib/food-correlations';
 import { generateInsights, type GutInsight, type DailyLog } from '@/lib/gut-insights';
+import WeeklyReportCard from '@/components/WeeklyReportCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
