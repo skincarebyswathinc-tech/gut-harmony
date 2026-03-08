@@ -143,6 +143,19 @@ const Dashboard = () => {
           setFoodCorrelations(computeCorrelations(foodData as unknown as FoodLog[]));
         }
       });
+
+    // gut intelligence insights
+    supabase
+      .from('daily_gut_logs')
+      .select('bloating, gas, acid_reflux, abdominal_discomfort, stool_type, sleep_hours, stress_level, water_intake, exercise_minutes, energy_level, mood')
+      .eq('user_id', user.id)
+      .order('log_date', { ascending: false })
+      .limit(90)
+      .then(({ data: logData }) => {
+        if (logData && logData.length > 0) {
+          setGutInsights(generateInsights(logData as unknown as DailyLog[]));
+        }
+      });
   }, [user]);
 
   const recommendations = scores ? getRecommendations(scores).slice(0, 5) : [];
