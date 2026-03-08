@@ -647,7 +647,7 @@ export function getRecommendations(scores: ScoreResult): string[] {
     recs.push('Excellent work! Maintain your healthy habits and consider periodic reassessments to track changes.');
   }
   if (scores.overall >= 60 && scores.overall < 80) {
-    recs.push('You're on a good track. Focus on the lowest-scoring areas for the biggest improvements.');
+    recs.push('You are on a good track. Focus on the lowest-scoring areas for the biggest improvements.');
   }
 
   return recs;
