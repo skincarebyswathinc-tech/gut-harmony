@@ -122,17 +122,16 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* Category Scores */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-10">
-              {sections.map((s) => {
-                const Icon = iconMap[s.icon] || Activity;
-                const sectionScore = (scores as any)[s.id] as number;
+            {/* Composite Health Scores */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-10">
+              {compositeScoresMeta.map((cs) => {
+                const compositeScore = (scores as any)[cs.key] as number;
                 return (
                   <ScoreRing
-                    key={s.id}
-                    score={sectionScore ?? 0}
-                    label={sectionDisplayNames[s.id] || s.title}
-                    icon={Icon}
+                    key={cs.key}
+                    score={compositeScore ?? 0}
+                    label={cs.label}
+                    icon={cs.icon}
                   />
                 );
               })}
