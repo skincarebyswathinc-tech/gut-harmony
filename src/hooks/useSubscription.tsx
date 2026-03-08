@@ -58,7 +58,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const { data } = await supabase
-        .from('subscriptions')
+        .from('subscriptions' as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
