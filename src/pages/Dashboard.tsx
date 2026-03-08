@@ -9,6 +9,7 @@ import {
 import { computeCorrelations, formatInsight, type FoodLog, type Correlation } from '@/lib/food-correlations';
 import { generateInsights, type GutInsight, type DailyLog } from '@/lib/gut-insights';
 import WeeklyReportCard from '@/components/WeeklyReportCard';
+import GutProgressCard from '@/components/GutProgressCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -305,6 +306,11 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            </section>
+
+            {/* ─── Streaks & Milestones ─── */}
+            <section>
+              <GutProgressCard />
             </section>
 
             {/* ─── 3. Key Gut Drivers ─── */}
