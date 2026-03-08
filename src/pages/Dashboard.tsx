@@ -402,6 +402,11 @@ const Dashboard = () => {
               </section>
             )}
 
+            {/* ─── Weekly Report ─── */}
+            <section>
+              <WeeklyReportCard />
+            </section>
+
             {/* ─── Food Trigger Insights ─── */}
             {foodCorrelations.length > 0 && (
               <section>
