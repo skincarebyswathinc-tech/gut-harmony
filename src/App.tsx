@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Assessment from "./pages/Assessment";
 import SkinAssessment from "./pages/SkinAssessment";
 import Profile from "./pages/Profile";
+import DailyGutLog from "./pages/DailyGutLog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
