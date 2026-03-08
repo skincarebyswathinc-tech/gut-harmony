@@ -196,7 +196,7 @@ const Dashboard = () => {
           <Leaf className="h-6 w-6 text-primary" />
           <span className="text-lg font-display font-semibold text-foreground">My Gut Health</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={() => navigate('/daily-log')}>
             <ClipboardList className="h-4 w-4 mr-1" /> Daily Log
           </Button>
@@ -208,6 +208,9 @@ const Dashboard = () => {
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/gut-report')}>
             <FileText className="h-4 w-4 mr-1" /> Report
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>
+            <Crown className="h-4 w-4 mr-1" /> Plans
           </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
             <User className="h-4 w-4 mr-1" /> Profile
