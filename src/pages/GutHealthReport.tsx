@@ -145,9 +145,12 @@ const GutHealthReport = () => {
           <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="h-4 w-4 mr-1" /> Dashboard
           </Button>
-          <Button size="sm" onClick={handleDownloadPDF}>
-            <Download className="h-4 w-4 mr-1" /> Download PDF
-          </Button>
+          <div className="flex items-center gap-2">
+            {assessmentId && <ShareReportDialog assessmentId={assessmentId} />}
+            <Button size="sm" onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-1" /> Download PDF
+            </Button>
+          </div>
         </nav>
 
         <div ref={reportRef} className="max-w-5xl mx-auto px-6 pb-16 space-y-8">
