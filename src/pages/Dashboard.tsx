@@ -111,6 +111,7 @@ const Dashboard = () => {
   const [scores, setScores] = useState<ScoreResult | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [completedAt, setCompletedAt] = useState<string | null>(null);
+  const [foodCorrelations, setFoodCorrelations] = useState<Correlation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
