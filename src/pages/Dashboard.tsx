@@ -1,31 +1,49 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { ScoreResult, getScoreLabel, getRecommendations } from '@/lib/assessment';
+import { sections, ScoreResult, getScoreLabel, getScoreColor, getRecommendations } from '@/lib/assessment';
 import { Button } from '@/components/ui/button';
-import { Leaf, User, LogOut, ArrowRight, Activity, Shield, Microscope, Heart } from 'lucide-react';
+import {
+  Leaf, User, LogOut, ArrowRight, Shield, Activity,
+  Stethoscope, ClipboardList, Sun, Apple, Flame, Brain, HeartPulse,
+} from 'lucide-react';
+
+const iconMap: Record<string, React.ElementType> = {
+  Stethoscope, ClipboardList, Sun, Apple, Flame, Brain, HeartPulse,
+  Shield, Activity,
+};
+
+const sectionDisplayNames: Record<string, string> = {
+  digestive_symptoms: 'Digestive',
+  stool_health: 'Stool Health',
+  lifestyle: 'Lifestyle',
+  diet_patterns: 'Diet',
+  inflammation: 'Inflammation',
+  gut_brain: 'Gut-Brain',
+  hormonal: 'Hormonal',
+};
 
 const ScoreRing = ({ score, label, icon: Icon }: { score: number; label: string; icon: React.ElementType }) => {
   const circumference = 2 * Math.PI * 40;
   const offset = circumference - (score / 100) * circumference;
   const scoreLabel = getScoreLabel(score);
 
-  const getColor = (s: number) => {
-    if (s >= 80) return 'text-score-excellent stroke-score-excellent';
-    if (s >= 60) return 'text-score-good stroke-score-good';
-    if (s >= 40) return 'text-score-fair stroke-score-fair';
-    return 'text-score-poor stroke-score-poor';
+  const getStrokeColor = (s: number) => {
+    if (s >= 80) return 'stroke-score-excellent';
+    if (s >= 60) return 'stroke-score-good';
+    if (s >= 40) return 'stroke-score-fair';
+    return 'stroke-score-poor';
   };
 
   return (
-    <div className="flex flex-col items-center bg-card border border-border rounded-lg p-6">
-      <div className="relative w-24 h-24 mb-3">
-        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+    <div className="flex flex-col items-center bg-card border border-border rounded-lg p-4 md:p-6">
+      <div className="relative w-20 h-20 md:w-24 md:h-24 mb-2">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="40" fill="none" className="stroke-muted" strokeWidth="8" />
           <circle
             cx="50" cy="50" r="40" fill="none"
-            className={getColor(score)}
+            className={getStrokeColor(score)}
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -34,14 +52,14 @@ const ScoreRing = ({ score, label, icon: Icon }: { score: number; label: string;
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xl font-bold text-foreground">{score}</span>
+          <span className="text-lg md:text-xl font-bold text-foreground">{score}</span>
         </div>
       </div>
-      <div className="flex items-center gap-1.5 mb-1">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium text-foreground">{label}</span>
+      <div className="flex items-center gap-1 mb-0.5">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-xs md:text-sm font-medium text-foreground">{label}</span>
       </div>
-      <span className={`text-xs font-medium ${getColor(score).split(' ')[0]}`}>{scoreLabel}</span>
+      <span className={`text-xs font-medium ${getScoreColor(score)}`}>{scoreLabel}</span>
     </div>
   );
 };
@@ -105,20 +123,32 @@ const Dashboard = () => {
               <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-accent mt-4">
                 <span className="text-4xl font-bold text-primary">{scores.overall}</span>
               </div>
-              <p className="text-muted-foreground mt-3">{getScoreLabel(scores.overall)}</p>
+              <p className={`mt-3 font-medium ${getScoreColor(scores.overall)}`}>
+                {getScoreLabel(scores.overall)}
+              </p>
             </div>
 
             {/* Category Scores */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-              <ScoreRing score={scores.inflammation} label="Inflammation" icon={Shield} />
-              <ScoreRing score={scores.digestion} label="Digestion" icon={Activity} />
-              <ScoreRing score={scores.microbiome} label="Microbiome" icon={Microscope} />
-              <ScoreRing score={scores.lifestyle} label="Lifestyle" icon={Heart} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-10">
+              {sections.map((s) => {
+                const Icon = iconMap[s.icon] || Activity;
+                const sectionScore = (scores as any)[s.id] as number;
+                return (
+                  <ScoreRing
+                    key={s.id}
+                    score={sectionScore ?? 0}
+                    label={sectionDisplayNames[s.id] || s.title}
+                    icon={Icon}
+                  />
+                );
+              })}
             </div>
 
             {/* Recommendations */}
             <div className="bg-card border border-border rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-display font-semibold text-foreground mb-4">Personalized Recommendations</h2>
+              <h2 className="text-xl font-display font-semibold text-foreground mb-4">
+                Personalized Recommendations
+              </h2>
               <ul className="space-y-3">
                 {recommendations.map((rec, i) => (
                   <li key={i} className="flex items-start gap-3">
