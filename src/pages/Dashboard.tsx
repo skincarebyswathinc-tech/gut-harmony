@@ -170,6 +170,9 @@ const Dashboard = () => {
           <Button variant="outline" size="sm" onClick={() => navigate('/daily-log')}>
             <ClipboardList className="h-4 w-4 mr-1" /> Daily Log
           </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/food-tracker')}>
+            <UtensilsCrossed className="h-4 w-4 mr-1" /> Food
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
             <User className="h-4 w-4 mr-1" /> Profile
           </Button>
