@@ -23,6 +23,7 @@ import GutHealthReport from "./pages/GutHealthReport";
 import Pricing from "./pages/Pricing";
 import PractitionerSignup from "./pages/PractitionerSignup";
 import PractitionerDashboard from "./pages/PractitionerDashboard";
+import UpgradeOffer from "./pages/UpgradeOffer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
