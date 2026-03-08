@@ -113,6 +113,7 @@ const Dashboard = () => {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [foodCorrelations, setFoodCorrelations] = useState<Correlation[]>([]);
+  const [gutInsights, setGutInsights] = useState<GutInsight[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
