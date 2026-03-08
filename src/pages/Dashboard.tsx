@@ -308,6 +308,11 @@ const Dashboard = () => {
               </Card>
             </section>
 
+            {/* ─── Streaks & Milestones ─── */}
+            <section>
+              <GutProgressCard />
+            </section>
+
             {/* ─── 3. Key Gut Drivers ─── */}
             <section>
               <Card>
