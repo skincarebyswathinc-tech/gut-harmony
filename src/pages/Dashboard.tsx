@@ -351,6 +351,38 @@ const Dashboard = () => {
               </Card>
             </section>
 
+            {/* ─── Food Trigger Insights ─── */}
+            {foodCorrelations.length > 0 && (
+              <section>
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-display flex items-center gap-2">
+                      <UtensilsCrossed className="h-5 w-5 text-primary" /> Food Triggers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {foodCorrelations.slice(0, 5).map((c, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-start gap-2 p-3 rounded-lg border ${
+                          c.direction === 'higher'
+                            ? 'bg-destructive/5 border-destructive/20'
+                            : 'bg-primary/5 border-primary/20'
+                        }`}
+                      >
+                        {c.direction === 'higher' ? (
+                          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                        ) : (
+                          <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        )}
+                        <p className="text-sm text-foreground">{formatInsight(c)}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
+
             {/* ─── 5. Reassessment ─── */}
             <section className="text-center pt-2">
               {canRetake ? (
