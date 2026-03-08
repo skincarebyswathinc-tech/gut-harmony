@@ -104,6 +104,51 @@ export type Database = {
         }
         Relationships: []
       }
+      food_logs: {
+        Row: {
+          bloating: number
+          created_at: string
+          fatigue: number
+          food_category: string
+          food_name: string
+          gas: number
+          id: string
+          log_date: string
+          logged_at: string
+          notes: string | null
+          reflux: number
+          user_id: string
+        }
+        Insert: {
+          bloating?: number
+          created_at?: string
+          fatigue?: number
+          food_category: string
+          food_name: string
+          gas?: number
+          id?: string
+          log_date?: string
+          logged_at?: string
+          notes?: string | null
+          reflux?: number
+          user_id: string
+        }
+        Update: {
+          bloating?: number
+          created_at?: string
+          fatigue?: number
+          food_category?: string
+          food_name?: string
+          gas?: number
+          id?: string
+          log_date?: string
+          logged_at?: string
+          notes?: string | null
+          reflux?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activity_level: string | null

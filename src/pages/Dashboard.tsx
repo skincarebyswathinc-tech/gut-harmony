@@ -6,12 +6,13 @@ import {
   sections, ScoreResult, getScoreLabel, getScoreColor, getRecommendations,
   assessmentQuestions,
 } from '@/lib/assessment';
+import { computeCorrelations, formatInsight, type FoodLog, type Correlation } from '@/lib/food-correlations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Leaf, User, LogOut, ArrowRight, Shield, Activity,
   Stethoscope, Flame, Apple, Brain, RefreshCw, TrendingDown, Zap,
-  ClipboardList,
+  ClipboardList, UtensilsCrossed, AlertTriangle, TrendingUp,
 } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -110,6 +111,7 @@ const Dashboard = () => {
   const [scores, setScores] = useState<ScoreResult | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [completedAt, setCompletedAt] = useState<string | null>(null);
+  const [foodCorrelations, setFoodCorrelations] = useState<Correlation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -127,6 +129,17 @@ const Dashboard = () => {
           setCompletedAt(data[0].completed_at);
         }
         setLoading(false);
+      });
+
+    // food correlations
+    supabase
+      .from('food_logs')
+      .select('food_category, bloating, gas, reflux, fatigue')
+      .eq('user_id', user.id)
+      .then(({ data: foodData }) => {
+        if (foodData && foodData.length > 0) {
+          setFoodCorrelations(computeCorrelations(foodData as unknown as FoodLog[]));
+        }
       });
   }, [user]);
 
@@ -169,6 +182,9 @@ const Dashboard = () => {
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => navigate('/daily-log')}>
             <ClipboardList className="h-4 w-4 mr-1" /> Daily Log
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/food-tracker')}>
+            <UtensilsCrossed className="h-4 w-4 mr-1" /> Food
           </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
             <User className="h-4 w-4 mr-1" /> Profile
@@ -334,6 +350,38 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </section>
+
+            {/* ─── Food Trigger Insights ─── */}
+            {foodCorrelations.length > 0 && (
+              <section>
+                <Card className="border-border">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-display flex items-center gap-2">
+                      <UtensilsCrossed className="h-5 w-5 text-primary" /> Food Triggers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {foodCorrelations.slice(0, 5).map((c, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-start gap-2 p-3 rounded-lg border ${
+                          c.direction === 'higher'
+                            ? 'bg-destructive/5 border-destructive/20'
+                            : 'bg-primary/5 border-primary/20'
+                        }`}
+                      >
+                        {c.direction === 'higher' ? (
+                          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                        ) : (
+                          <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        )}
+                        <p className="text-sm text-foreground">{formatInsight(c)}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
 
             {/* ─── 5. Reassessment ─── */}
             <section className="text-center pt-2">
