@@ -7,12 +7,13 @@ import {
   assessmentQuestions,
 } from '@/lib/assessment';
 import { computeCorrelations, formatInsight, type FoodLog, type Correlation } from '@/lib/food-correlations';
+import { generateInsights, type GutInsight, type DailyLog } from '@/lib/gut-insights';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Leaf, User, LogOut, ArrowRight, Shield, Activity,
   Stethoscope, Flame, Apple, Brain, RefreshCw, TrendingDown, Zap,
-  ClipboardList, UtensilsCrossed, AlertTriangle, TrendingUp,
+  ClipboardList, UtensilsCrossed, AlertTriangle, TrendingUp, Lightbulb,
 } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -112,6 +113,7 @@ const Dashboard = () => {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [foodCorrelations, setFoodCorrelations] = useState<Correlation[]>([]);
+  const [gutInsights, setGutInsights] = useState<GutInsight[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -139,6 +141,19 @@ const Dashboard = () => {
       .then(({ data: foodData }) => {
         if (foodData && foodData.length > 0) {
           setFoodCorrelations(computeCorrelations(foodData as unknown as FoodLog[]));
+        }
+      });
+
+    // gut intelligence insights
+    supabase
+      .from('daily_gut_logs')
+      .select('bloating, gas, acid_reflux, abdominal_discomfort, stool_type, sleep_hours, stress_level, water_intake, exercise_minutes, energy_level, mood')
+      .eq('user_id', user.id)
+      .order('log_date', { ascending: false })
+      .limit(90)
+      .then(({ data: logData }) => {
+        if (logData && logData.length > 0) {
+          setGutInsights(generateInsights(logData as unknown as DailyLog[]));
         }
       });
   }, [user]);
@@ -353,6 +368,38 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </section>
+
+            {/* ─── Gut Intelligence Insights ─── */}
+            {gutInsights.length > 0 && (
+              <section>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg font-display flex items-center gap-2">
+                      <Lightbulb className="h-5 w-5 text-primary" /> Gut Intelligence Insights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {gutInsights.map((insight, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-start gap-2 p-3 rounded-lg border ${
+                          insight.type === 'warning'
+                            ? 'bg-destructive/5 border-destructive/20'
+                            : 'bg-primary/5 border-primary/20'
+                        }`}
+                      >
+                        {insight.type === 'warning' ? (
+                          <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                        ) : (
+                          <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        )}
+                        <p className="text-sm text-foreground">{insight.message}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </section>
+            )}
 
             {/* ─── Food Trigger Insights ─── */}
             {foodCorrelations.length > 0 && (
