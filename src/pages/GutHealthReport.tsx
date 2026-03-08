@@ -6,6 +6,7 @@ import { getScoreLabel, getScoreColor } from '@/lib/assessment';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import ShareReportDialog from '@/components/ShareReportDialog';
 import {
   Leaf, ArrowLeft, Download, Shield, Activity, Stethoscope,
   Flame, Apple, Brain, AlertTriangle, FileText, Loader2,
