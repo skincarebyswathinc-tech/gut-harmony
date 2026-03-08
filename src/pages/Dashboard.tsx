@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Leaf, User, LogOut, ArrowRight, Shield, Activity,
   Stethoscope, Flame, Apple, Brain, RefreshCw, TrendingDown, Zap,
-  ClipboardList, UtensilsCrossed, AlertTriangle, TrendingUp, Lightbulb,
+  ClipboardList, UtensilsCrossed, AlertTriangle, TrendingUp, Lightbulb, FileText,
 } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
