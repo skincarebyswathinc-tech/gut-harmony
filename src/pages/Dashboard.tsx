@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Leaf, User, LogOut, ArrowRight, Shield, Activity,
   Stethoscope, Flame, Apple, Brain, RefreshCw, TrendingDown, Zap,
-  ClipboardList, UtensilsCrossed, AlertTriangle, TrendingUp, Lightbulb,
+  ClipboardList, UtensilsCrossed, AlertTriangle, TrendingUp, Lightbulb, FileText,
 } from 'lucide-react';
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -205,6 +205,9 @@ const Dashboard = () => {
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/gut-progress')}>
             <TrendingUp className="h-4 w-4 mr-1" /> Progress
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/gut-report')}>
+            <FileText className="h-4 w-4 mr-1" /> Report
           </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
             <User className="h-4 w-4 mr-1" /> Profile
