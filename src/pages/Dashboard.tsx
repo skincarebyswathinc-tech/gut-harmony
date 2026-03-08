@@ -1,15 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { sections, ScoreResult, getScoreLabel, getScoreColor, getRecommendations } from '@/lib/assessment';
+import {
+  sections, ScoreResult, getScoreLabel, getScoreColor, getRecommendations,
+  assessmentQuestions,
+} from '@/lib/assessment';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Leaf, User, LogOut, ArrowRight, Shield, Activity,
-  Stethoscope, ClipboardList, Sun, Apple, Flame, Brain, HeartPulse,
+  Stethoscope, Flame, Apple, Brain, RefreshCw, TrendingDown, Zap,
 } from 'lucide-react';
+import {
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  Radar, ResponsiveContainer, Tooltip,
+} from 'recharts';
 
-const compositeScoresMeta: { key: string; label: string; icon: React.ElementType }[] = [
+/* ── Score meta ────────────────────────────────────── */
+
+const compositeScoresMeta = [
   { key: 'gut_integrity', label: 'Gut Integrity', icon: Shield },
   { key: 'microbiome_diversity', label: 'Microbiome Diversity', icon: Activity },
   { key: 'digestive_efficiency', label: 'Digestive Efficiency', icon: Stethoscope },
@@ -18,10 +28,44 @@ const compositeScoresMeta: { key: string; label: string; icon: React.ElementType
   { key: 'gut_brain_balance', label: 'Gut-Brain Balance', icon: Brain },
 ];
 
+/* ── Key drivers logic ─────────────────────────────── */
+
+interface Driver {
+  label: string;
+  impact: 'negative' | 'positive';
+  value: number;
+}
+
+function getKeyDrivers(answers: Record<string, number>): Driver[] {
+  const driverMap: { id: string; label: string }[] = [
+    { id: 'lf_stress', label: 'Stress Level' },
+    { id: 'lf_sleep_quality', label: 'Sleep Quality' },
+    { id: 'dp_sugar', label: 'Sugar Consumption' },
+    { id: 'dp_fiber', label: 'Fiber Intake' },
+    { id: 'dp_fermented', label: 'Fermented Foods' },
+    { id: 'lf_water', label: 'Water Intake' },
+    { id: 'lf_alcohol', label: 'Alcohol Intake' },
+    { id: 'dp_processed_food', label: 'Processed Food' },
+    { id: 'lf_exercise', label: 'Exercise' },
+    { id: 'lf_antibiotics_recent', label: 'Recent Antibiotics' },
+  ];
+
+  return driverMap
+    .filter(d => answers[d.id] !== undefined)
+    .map(d => ({
+      label: d.label,
+      value: answers[d.id],
+      impact: answers[d.id] <= 3 ? 'negative' as const : 'positive' as const,
+    }))
+    .sort((a, b) => a.value - b.value)
+    .slice(0, 6);
+}
+
+/* ── Score ring ────────────────────────────────────── */
+
 const ScoreRing = ({ score, label, icon: Icon }: { score: number; label: string; icon: React.ElementType }) => {
   const circumference = 2 * Math.PI * 40;
   const offset = circumference - (score / 100) * circumference;
-  const scoreLabel = getScoreLabel(score);
 
   const getStrokeColor = (s: number) => {
     if (s >= 80) return 'stroke-score-excellent';
@@ -31,15 +75,14 @@ const ScoreRing = ({ score, label, icon: Icon }: { score: number; label: string;
   };
 
   return (
-    <div className="flex flex-col items-center bg-card border border-border rounded-lg p-4 md:p-6">
+    <div className="flex flex-col items-center bg-card border border-border rounded-lg p-4 transition-shadow hover:shadow-md">
       <div className="relative w-20 h-20 md:w-24 md:h-24 mb-2">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="40" fill="none" className="stroke-muted" strokeWidth="8" />
           <circle
             cx="50" cy="50" r="40" fill="none"
             className={getStrokeColor(score)}
-            strokeWidth="8"
-            strokeLinecap="round"
+            strokeWidth="8" strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             style={{ transition: 'stroke-dashoffset 1s ease-out' }}
@@ -53,15 +96,19 @@ const ScoreRing = ({ score, label, icon: Icon }: { score: number; label: string;
         <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-xs md:text-sm font-medium text-foreground">{label}</span>
       </div>
-      <span className={`text-xs font-medium ${getScoreColor(score)}`}>{scoreLabel}</span>
+      <span className={`text-xs font-medium ${getScoreColor(score)}`}>{getScoreLabel(score)}</span>
     </div>
   );
 };
+
+/* ── Dashboard ─────────────────────────────────────── */
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [scores, setScores] = useState<ScoreResult | null>(null);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [completedAt, setCompletedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,12 +122,35 @@ const Dashboard = () => {
       .then(({ data }) => {
         if (data && data.length > 0) {
           setScores(data[0].scores as unknown as ScoreResult);
+          setAnswers(data[0].answers as unknown as Record<string, number>);
+          setCompletedAt(data[0].completed_at);
         }
         setLoading(false);
       });
   }, [user]);
 
-  const recommendations = scores ? getRecommendations(scores) : [];
+  const recommendations = scores ? getRecommendations(scores).slice(0, 5) : [];
+  const drivers = useMemo(() => getKeyDrivers(answers), [answers]);
+
+  const radarData = scores
+    ? compositeScoresMeta.map(m => ({
+        metric: m.label,
+        score: (scores as any)[m.key] ?? 0,
+        fullMark: 100,
+      }))
+    : [];
+
+  const canRetake = useMemo(() => {
+    if (!completedAt) return true;
+    const diff = Date.now() - new Date(completedAt).getTime();
+    return diff >= 30 * 24 * 60 * 60 * 1000;
+  }, [completedAt]);
+
+  const daysUntilRetake = useMemo(() => {
+    if (!completedAt) return 0;
+    const diff = 30 - Math.floor((Date.now() - new Date(completedAt).getTime()) / (24 * 60 * 60 * 1000));
+    return Math.max(0, diff);
+  }, [completedAt]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -89,10 +159,11 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-6 py-4 max-w-5xl mx-auto">
+      {/* Nav */}
+      <nav className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
           <Leaf className="h-6 w-6 text-primary" />
-          <span className="text-lg font-display font-semibold text-foreground">Dashboard</span>
+          <span className="text-lg font-display font-semibold text-foreground">My Gut Health</span>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
@@ -104,60 +175,180 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 animate-fade-in">
+      <div className="max-w-6xl mx-auto px-6 pb-16 animate-fade-in">
         {loading ? (
-          <div className="text-center py-20 text-muted-foreground">Loading your results...</div>
+          <div className="text-center py-20 text-muted-foreground">Loading your results…</div>
         ) : scores ? (
-          <>
-            {/* Overall */}
-            <div className="text-center mb-10">
-              <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-                Your Gut Health Score
-              </h1>
-              <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-accent mt-4">
-                <span className="text-4xl font-bold text-primary">{scores.overall}</span>
+          <div className="space-y-8">
+            {/* ─── 1. Gut Health Score Card ─── */}
+            <section>
+              <div className="text-center mb-6">
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
+                  My Gut Health
+                </h1>
+                <p className="text-muted-foreground mt-1 text-sm">Your personalized gut health overview</p>
               </div>
-              <p className={`mt-3 font-medium ${getScoreColor(scores.overall)}`}>
-                {getScoreLabel(scores.overall)}
-              </p>
-            </div>
 
-            {/* Composite Health Scores */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-10">
-              {compositeScoresMeta.map((cs) => {
-                const compositeScore = (scores as any)[cs.key] as number;
-                return (
+              {/* Overall ring */}
+              <div className="flex justify-center mb-8">
+                <div className="flex flex-col items-center">
+                  <div className="relative w-36 h-36">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="42" fill="none" className="stroke-muted" strokeWidth="6" />
+                      <circle
+                        cx="50" cy="50" r="42" fill="none"
+                        className={scores.overall >= 80 ? 'stroke-score-excellent' : scores.overall >= 60 ? 'stroke-score-good' : scores.overall >= 40 ? 'stroke-score-fair' : 'stroke-score-poor'}
+                        strokeWidth="6" strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 42}
+                        strokeDashoffset={2 * Math.PI * 42 - (scores.overall / 100) * 2 * Math.PI * 42}
+                        style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-3xl font-bold text-foreground">{scores.overall}</span>
+                      <span className="text-xs text-muted-foreground">Overall</span>
+                    </div>
+                  </div>
+                  <span className={`mt-2 text-sm font-semibold ${getScoreColor(scores.overall)}`}>
+                    {getScoreLabel(scores.overall)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Composite score rings */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {compositeScoresMeta.map(cs => (
                   <ScoreRing
                     key={cs.key}
-                    score={compositeScore ?? 0}
+                    score={(scores as any)[cs.key] ?? 0}
                     label={cs.label}
                     icon={cs.icon}
                   />
-                );
-              })}
-            </div>
-
-            {/* Recommendations */}
-            <div className="bg-card border border-border rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-display font-semibold text-foreground mb-4">
-                Personalized Recommendations
-              </h2>
-              <ul className="space-y-3">
-                {recommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">{rec}</span>
-                  </li>
                 ))}
-              </ul>
-            </div>
+              </div>
+            </section>
 
-            <div className="text-center">
-              <Button onClick={() => navigate('/assessment')}>
-                Retake Assessment <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </>
+            {/* ─── 2. Gut Radar Chart ─── */}
+            <section>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-display">Gut Health Radar</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="w-full h-72 md:h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="75%">
+                        <PolarGrid stroke="hsl(var(--border))" />
+                        <PolarAngleAxis
+                          dataKey="metric"
+                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                        />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                        <Radar
+                          name="Score"
+                          dataKey="score"
+                          stroke="hsl(var(--primary))"
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.2}
+                          strokeWidth={2}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: 'var(--radius)',
+                            fontSize: 13,
+                          }}
+                          formatter={(value: number) => [`${value}/100`, 'Score']}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* ─── 3. Key Gut Drivers ─── */}
+            <section>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-display flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-primary" />
+                    Key Gut Drivers
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Top lifestyle triggers affecting your gut health
+                  </p>
+                  <div className="space-y-3">
+                    {drivers.map(d => (
+                      <div key={d.label} className="flex items-center gap-3">
+                        <TrendingDown
+                          className={`h-4 w-4 flex-shrink-0 ${
+                            d.impact === 'negative' ? 'text-score-poor rotate-0' : 'text-score-excellent rotate-180'
+                          }`}
+                        />
+                        <span className="text-sm text-foreground flex-1">{d.label}</span>
+                        <div className="w-28 h-2 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              d.value >= 4
+                                ? 'bg-score-excellent'
+                                : d.value === 3
+                                ? 'bg-score-fair'
+                                : 'bg-score-poor'
+                            }`}
+                            style={{ width: `${(d.value / 5) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-muted-foreground w-8 text-right">
+                          {d.value}/5
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* ─── 4. Recommendations ─── */}
+            <section>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-display">Personalized Recommendations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {recommendations.map((rec, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <div className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </section>
+
+            {/* ─── 5. Reassessment ─── */}
+            <section className="text-center pt-2">
+              {canRetake ? (
+                <Button onClick={() => navigate('/assessment')} size="lg">
+                  <RefreshCw className="mr-2 h-4 w-4" /> Retake Assessment
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <Button disabled size="lg" variant="outline">
+                    <RefreshCw className="mr-2 h-4 w-4" /> Retake Available in {daysUntilRetake} Days
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Reassessments are available every 30 days for accurate tracking.
+                  </p>
+                </div>
+              )}
+            </section>
+          </div>
         ) : (
           <div className="text-center py-20">
             <h2 className="text-2xl font-display font-bold text-foreground mb-4">No assessment yet</h2>
